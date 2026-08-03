@@ -1,5 +1,8 @@
 # speedify-status
 
+[![Validate](https://github.com/mkronvold/speedify-status/actions/workflows/validate.yml/badge.svg)](https://github.com/mkronvold/speedify-status/actions/workflows/validate.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+
 **Speedify multi-WAN health board** — live per-WAN latency (min/avg/max), throughput in **Mbps** (min/avg/max), and adapter priority/state.
 
 This project is a focused health board for Speedify bonding adapters. It is **independent of** WDMBG, ntop, NetFlow, and other traffic-volume dashboards.

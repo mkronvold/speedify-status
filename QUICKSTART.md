@@ -5,6 +5,13 @@ Public path to run **speedify-status**: API + web via Compose, a reverse proxy i
 Design background: [DESIGN.md](./DESIGN.md).  
 One concrete home-lab example (hostnames, AdGuard, NPM): [docs/DEPLOY-HOME.md](./docs/DEPLOY-HOME.md).
 
+> **Line endings:** scripts under `deploy/**` are **LF** (Unix). The repo sets `* text=auto eol=lf` in [`.gitattributes`](./.gitattributes). If bash errors on `$'\r'` after a Windows copy, run:
+>
+> ```bash
+> sed -i 's/\r$//' deploy/compose/*.sh deploy/gw0/*.sh deploy/gw0/*.init 2>/dev/null || true
+> chmod +x deploy/compose/*.sh deploy/gw0/install.sh
+> ```
+
 ## 1. Prerequisites
 
 - Docker Engine + Compose plugin on the **app host**
@@ -45,6 +52,7 @@ The stock file expects an **external** Docker network named `nginxproxy_proxy-ne
 docker network create nginxproxy_proxy-net
 
 cd deploy/compose
+chmod +x up.sh down.sh autoupdate.sh
 ./up.sh
 docker compose -f compose.prod.yml --env-file images.env ps
 ```
