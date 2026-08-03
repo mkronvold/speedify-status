@@ -1,54 +1,76 @@
 # speedify-status
 
-Purpose-built **Speedify WAN health** dashboard (independent of WDMBG).
+**Speedify multi-WAN health board** — live per-WAN latency (min/avg/max), throughput in **Mbps** (min/avg/max), and adapter priority/state.
 
-- **Go agent** on OpenWrt `gw0` (x86_64 / **amd64**) samples adapters + interface Mbps + ICMP latency
-- **Fastify API** keeps an in-memory **1s ring ~1 hour** (no Postgres in MVP)
-- **React** compact dark UI: window + refresh controls and a sortable adapter table
+This project is a focused health board for Speedify bonding adapters. It is **independent of** WDMBG, ntop, NetFlow, and other traffic-volume dashboards.
 
-Stack follows [mkronvold/techstack](https://github.com/mkronvold/techstack) product-app shape (pnpm@10 + Turbo, Node 26, GHCR). Do not duplicate full policy here.
+| Doc                                              | Audience                                              |
+| ------------------------------------------------ | ----------------------------------------------------- |
+| **[QUICKSTART.md](./QUICKSTART.md)**             | Public install path (compose + reverse proxy + agent) |
+| **[DESIGN.md](./DESIGN.md)**                     | Goals, data plane, trust model, roadmap               |
+| **[docs/DEPLOY-HOME.md](./docs/DEPLOY-HOME.md)** | One home-lab reference (optional detail)              |
+| **[deploy/](./deploy/)**                         | Compose stack + OpenWrt agent install scripts         |
 
-Home LAN host: `speedify.lan` (NPM → web:80, no SSL). Planned public host: `speedify.kronvold.org` (document only).
+License: [MIT](./LICENSE)
 
-**Home deploy:** [docs/DEPLOY-HOME.md](./docs/DEPLOY-HOME.md)
+## What you get
+
+- Per-adapter **latency** min / avg / max (ms)
+- Per-adapter **download Mbps** min / avg / max and **upload Mbps** avg
+- Adapter **name**, **state**, **priority** / working priority, optional daily usage
+- Query **windows**: `5s` · `30s` · `5m` · `15m` · `30m` · `1h`
+- Display refresh controls (pause / 1s / 5s / …)
 
 ## Architecture
 
+```text
+Speedify host                         App host (Docker)
+┌──────────────────────────┐          ┌─────────────────────────────┐
+│ Go agent (host-native)   │  POST    │ Fastify API                 │
+│  speedify_cli adapters   │ ───────▶ │  in-memory 1s ring (~1h)    │
+│  /proc/net/dev → Mbps    │ /api/    │ React web (static + nginx)  │
+│  per-iface ICMP RTT      │ ingest   │  proxies /api and /health   │
+└──────────────────────────┘          └─────────────────────────────┘
 ```
-gw0 (OpenWrt x86_64)              lab host (docker.lan)
-┌─────────────────────┐           ┌──────────────────────────────┐
-│ speedify-status-    │  POST     │ api  :4090  in-memory ring   │
-│ agent (procd)       │──────────▶│ web  :80    React static     │
-│ speedify_cli +      │  /api/    │ via NPM speedify.lan         │
-│ /proc/net/dev + ICMP│  ingest   └──────────────────────────────┘
-└─────────────────────┘
-```
 
-| Path                  | Role                               |
-| --------------------- | ---------------------------------- |
-| `apps/agent`          | Host-native Go binary for gw0      |
-| `apps/api`            | Fastify + TypeScript ingest/status |
-| `apps/web`            | React 19 + Vite dashboard          |
-| `packages/contracts`  | Shared Zod schemas                 |
-| `packages/config`     | Defaults / env helpers             |
-| `deploy/compose`      | api+web Compose for docker.lan     |
-| `deploy/gw0`          | Agent install + procd (amd64)      |
-| `docs/DEPLOY-HOME.md` | Home lab bring-up checklist        |
+1. **Agent** on the Speedify host samples adapters about once per second and POSTs a batch.
+2. **API** keeps samples in an in-memory ring (no database in MVP).
+3. **Web UI** polls `/api/status?window=…` and renders a compact dark table.
 
-## Dashboard columns (MVP)
+## Stack
 
-`Name | State | Priority | Lat min | avg | max | DL min | avg | max | UL avg | Daily GB`
+| Piece     | Tech                                      |
+| --------- | ----------------------------------------- |
+| Monorepo  | **pnpm** + **Turbo**                      |
+| Agent     | **Go** host binary (`apps/agent`)         |
+| API       | **Fastify** + TypeScript (`apps/api`)     |
+| Web       | **React** + Vite (`apps/web`)             |
+| Contracts | Shared Zod schemas (`packages/contracts`) |
 
-Controls: query **window** `5s|30s|5m|15m|30m|1h` and **display refresh** (pause/1s/5s/30s…).
+## GHCR images
 
-## Local development
+Published from `main`:
 
-Requirements: Node 26, corepack/pnpm 10, Go 1.25+.
+- `ghcr.io/mkronvold/speedify-status-api:main`
+- `ghcr.io/mkronvold/speedify-status-web:main`
+
+Pins live in [`deploy/compose/images.env`](./deploy/compose/images.env).
+
+## Quick links
+
+- **Production-style bring-up:** [QUICKSTART.md](./QUICKSTART.md)
+- **Design / non-goals:** [DESIGN.md](./DESIGN.md)
+- **Compose:** [`deploy/compose/`](./deploy/compose/)
+- **Agent install (OpenWrt-style procd):** [`deploy/gw0/`](./deploy/gw0/)
+
+## Local development (simulate)
+
+Requirements: **Node 26**, corepack / **pnpm 10**, **Go 1.25+**.
 
 ```bash
 corepack enable
 pnpm install
-pnpm validate          # lint, typecheck, test, build, format
+pnpm validate   # lint, typecheck, test, build, format
 ```
 
 ```bash
@@ -61,66 +83,36 @@ pnpm --filter @speedify-status/web dev
 # terminal 3 — simulated agent → local API
 cd apps/agent
 go run . -simulate -once -ingest-url http://127.0.0.1:4090/api/ingest/sample
-# or continuous:
+# continuous:
 go run . -simulate -ingest-url http://127.0.0.1:4090/api/ingest/sample
 ```
 
 Open http://127.0.0.1:5174/
 
-### Agent tests / real gw0
+## API surface
 
-```bash
-cd apps/agent && go test ./...
-# cross-compile for gw0 (OpenWrt x86_64):
-GOOS=linux GOARCH=amd64 go build -o speedify-status-agent .
-```
+| Method | Path                     | Notes                      |
+| ------ | ------------------------ | -------------------------- |
+| `GET`  | `/health`, `/api/health` | Liveness + last sample age |
+| `POST` | `/api/ingest/sample`     | Agent sample batch         |
+| `GET`  | `/api/status?window=30s` | Per-adapter min/avg/max    |
 
-Real path uses `/usr/share/speedify/speedify_cli show adapters`, `/proc/net/dev` byte deltas for Mbps, and per-iface ICMP (`ping -I ethN`) to the interface gateway (fallback `1.1.1.1`). See [`deploy/gw0/`](./deploy/gw0/) and [`docs/DEPLOY-HOME.md`](./docs/DEPLOY-HOME.md).
+Optional ingest auth: set `SPEEDIFY_STATUS_INGEST_TOKEN` on the API and send `Authorization: Bearer …` or `X-Ingest-Token` from the agent (`INGEST_TOKEN`).
 
-## API
+## Repository layout
 
-| Method | Path                     | Notes                              |
-| ------ | ------------------------ | ---------------------------------- |
-| `GET`  | `/health`, `/api/health` | liveness + last sample age         |
-| `POST` | `/api/ingest/sample`     | agent sample batch                 |
-| `GET`  | `/api/status?window=30s` | per-adapter min/avg/max aggregates |
-
-Optional `SPEEDIFY_STATUS_INGEST_TOKEN` — send `Authorization: Bearer …` or `X-Ingest-Token`.
-
-## Compose (docker.lan)
-
-```bash
-cp deploy/env/api.env.example deploy/env/api.env
-# edit token etc.
-cd deploy/compose && ./up.sh
-```
-
-Full checklist (NPM `speedify.lan`, AdGuard, gw0 agent): **[docs/DEPLOY-HOME.md](./docs/DEPLOY-HOME.md)**.
-
-Images (on `main`):
-
-- `ghcr.io/mkronvold/speedify-status-api`
-- `ghcr.io/mkronvold/speedify-status-web`
-
-## Env vars
-
-| Var                            | Where | Default                                        |
-| ------------------------------ | ----- | ---------------------------------------------- |
-| `SPEEDIFY_STATUS_API_HOST`     | api   | `0.0.0.0`                                      |
-| `SPEEDIFY_STATUS_API_PORT`     | api   | `4090`                                         |
-| `SPEEDIFY_STATUS_INGEST_TOKEN` | api   | unset                                          |
-| `INGEST_URL`                   | agent | `http://speedify.lan/api/ingest/sample` (home) |
-| `INGEST_TOKEN`                 | agent | unset                                          |
-| `INTERVAL_SEC`                 | agent | `1`                                            |
-| `SPEEDIFY_CLI`                 | agent | `/usr/share/speedify/speedify_cli`             |
-| `LATENCY_FALLBACK_HOST`        | agent | `1.1.1.1`                                      |
-| `SIMULATE`                     | agent | `false`                                        |
-
-## Non-goals (MVP)
-
-Postgres, Prometheus exporter replacement, Speedify connect/disconnect controls, log parsing, WDMBG code changes, multi-router.
+| Path                  | Role                       |
+| --------------------- | -------------------------- |
+| `apps/agent`          | Host-native Go sampler     |
+| `apps/api`            | Fastify ingest + status    |
+| `apps/web`            | React dashboard            |
+| `packages/contracts`  | Shared Zod schemas         |
+| `packages/config`     | Defaults / env helpers     |
+| `deploy/compose`      | api + web Compose          |
+| `deploy/gw0`          | Agent install + procd unit |
+| `docs/DEPLOY-HOME.md` | Lab-specific checklist     |
 
 ## CI
 
-- **Validate** — pnpm lint/typecheck/test/build/format + `go test` / build agent
-- **Images** — build/push api+web to GHCR on `main`
+- **Validate** — pnpm lint / typecheck / test / build / format + `go test` / amd64 agent build
+- **Images** — build and push api + web to GHCR on `main`
