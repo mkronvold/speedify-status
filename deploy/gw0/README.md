@@ -40,11 +40,11 @@ ssh root@gw0 'sh -s' < deploy/gw0/install.sh
 
 Environment variables for `install.sh`:
 
-| Var         | Meaning                                              |
-| ----------- | ---------------------------------------------------- |
-| `AGENT_BIN` | Path to binary (default: nearby / `/tmp/...`)        |
-| `AGENT_SRC` | Optional download URL if binary not present          |
-| `RESTART=0` | Install + enable only; skip start/restart            |
+| Var         | Meaning                                       |
+| ----------- | --------------------------------------------- |
+| `AGENT_BIN` | Path to binary (default: nearby / `/tmp/...`) |
+| `AGENT_SRC` | Optional download URL if binary not present   |
+| `RESTART=0` | Install + enable only; skip start/restart     |
 
 ## Manual install (equivalent)
 

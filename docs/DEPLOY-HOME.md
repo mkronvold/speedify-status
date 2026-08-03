@@ -5,10 +5,10 @@ front door via Nginx Proxy Manager on `speedify.lan` (http, no SSL).
 
 ## Targets
 
-| Role | Host | Access |
-| --- | --- | --- |
-| App stack (`web`, `api`) | `docker.lan` | SSH `user@docker.lan` |
-| Agent (Speedify sample) | `gw0` (OpenWrt 24.10 x86_64) | SSH `root@gw0` |
+| Role                     | Host                         | Access                |
+| ------------------------ | ---------------------------- | --------------------- |
+| App stack (`web`, `api`) | `docker.lan`                 | SSH `user@docker.lan` |
+| Agent (Speedify sample)  | `gw0` (OpenWrt 24.10 x86_64) | SSH `root@gw0`        |
 
 Leave the existing **`speedify_exporter` :9961** alone.
 
@@ -29,10 +29,10 @@ Suggested layout after checkout:
 
 ## Networking (locked)
 
-| Service | Networks | Published host ports |
-| --- | --- | --- |
-| `web` | app-local **and** `nginxproxy_proxy-net` | **None** |
-| `api` | app-local only | **None** |
+| Service | Networks                                 | Published host ports |
+| ------- | ---------------------------------------- | -------------------- |
+| `web`   | app-local **and** `nginxproxy_proxy-net` | **None**             |
+| `api`   | app-local only                           | **None**             |
 
 - Shared proxy network: **`nginxproxy_proxy-net`** (external; owned by NPM).
 - Only **web** attaches to the proxy network.
@@ -41,25 +41,25 @@ Suggested layout after checkout:
 
 ## LAN DNS and NPM
 
-| Item | Value |
-| --- | --- |
-| AdGuard rewrite | `speedify.lan` → docker.lan IP |
-| NPM domain | `speedify.lan` |
-| NPM scheme | `http` |
-| NPM forward | Docker DNS name **`web`** port **`80`** (compose project `speedify-status`) |
-| SSL | Off / Force SSL off |
-| Websockets | Optional / off (not required for MVP) |
+| Item            | Value                                                                       |
+| --------------- | --------------------------------------------------------------------------- |
+| AdGuard rewrite | `speedify.lan` → docker.lan IP                                              |
+| NPM domain      | `speedify.lan`                                                              |
+| NPM scheme      | `http`                                                                      |
+| NPM forward     | Docker DNS name **`web`** port **`80`** (compose project `speedify-status`) |
+| SSL             | Off / Force SSL off                                                         |
+| Websockets      | Optional / off (not required for MVP)                                       |
 
 NPM admin (internal): `http://npm.lan:81`. AdGuard UI: `http://adguard.lan`.
 
 ## URLs
 
-| Client | URL |
-| --- | --- |
-| Dashboard | `http://speedify.lan/` |
-| Health | `http://speedify.lan/health` |
-| Status API | `http://speedify.lan/api/status?window=30s` |
-| Agent ingest | `http://speedify.lan/api/ingest/sample` |
+| Client       | URL                                         |
+| ------------ | ------------------------------------------- |
+| Dashboard    | `http://speedify.lan/`                      |
+| Health       | `http://speedify.lan/health`                |
+| Status API   | `http://speedify.lan/api/status?window=30s` |
+| Agent ingest | `http://speedify.lan/api/ingest/sample`     |
 
 GHCR images (on `main`):
 

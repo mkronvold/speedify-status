@@ -24,16 +24,16 @@ gw0 (OpenWrt x86_64)              lab host (docker.lan)
 └─────────────────────┘
 ```
 
-| Path                 | Role                               |
-| -------------------- | ---------------------------------- |
-| `apps/agent`         | Host-native Go binary for gw0      |
-| `apps/api`           | Fastify + TypeScript ingest/status |
-| `apps/web`           | React 19 + Vite dashboard          |
-| `packages/contracts` | Shared Zod schemas                 |
-| `packages/config`    | Defaults / env helpers             |
-| `deploy/compose`     | api+web Compose for docker.lan     |
-| `deploy/gw0`         | Agent install + procd (amd64)      |
-| `docs/DEPLOY-HOME.md`| Home lab bring-up checklist        |
+| Path                  | Role                               |
+| --------------------- | ---------------------------------- |
+| `apps/agent`          | Host-native Go binary for gw0      |
+| `apps/api`            | Fastify + TypeScript ingest/status |
+| `apps/web`            | React 19 + Vite dashboard          |
+| `packages/contracts`  | Shared Zod schemas                 |
+| `packages/config`     | Defaults / env helpers             |
+| `deploy/compose`      | api+web Compose for docker.lan     |
+| `deploy/gw0`          | Agent install + procd (amd64)      |
+| `docs/DEPLOY-HOME.md` | Home lab bring-up checklist        |
 
 ## Dashboard columns (MVP)
 
@@ -104,17 +104,17 @@ Images (on `main`):
 
 ## Env vars
 
-| Var                            | Where | Default                                         |
-| ------------------------------ | ----- | ----------------------------------------------- |
-| `SPEEDIFY_STATUS_API_HOST`     | api   | `0.0.0.0`                                       |
-| `SPEEDIFY_STATUS_API_PORT`     | api   | `4090`                                          |
-| `SPEEDIFY_STATUS_INGEST_TOKEN` | api   | unset                                           |
-| `INGEST_URL`                   | agent | `http://speedify.lan/api/ingest/sample` (home)  |
-| `INGEST_TOKEN`                 | agent | unset                                           |
-| `INTERVAL_SEC`                 | agent | `1`                                             |
-| `SPEEDIFY_CLI`                 | agent | `/usr/share/speedify/speedify_cli`              |
-| `LATENCY_FALLBACK_HOST`        | agent | `1.1.1.1`                                       |
-| `SIMULATE`                     | agent | `false`                                         |
+| Var                            | Where | Default                                        |
+| ------------------------------ | ----- | ---------------------------------------------- |
+| `SPEEDIFY_STATUS_API_HOST`     | api   | `0.0.0.0`                                      |
+| `SPEEDIFY_STATUS_API_PORT`     | api   | `4090`                                         |
+| `SPEEDIFY_STATUS_INGEST_TOKEN` | api   | unset                                          |
+| `INGEST_URL`                   | agent | `http://speedify.lan/api/ingest/sample` (home) |
+| `INGEST_TOKEN`                 | agent | unset                                          |
+| `INTERVAL_SEC`                 | agent | `1`                                            |
+| `SPEEDIFY_CLI`                 | agent | `/usr/share/speedify/speedify_cli`             |
+| `LATENCY_FALLBACK_HOST`        | agent | `1.1.1.1`                                      |
+| `SIMULATE`                     | agent | `false`                                        |
 
 ## Non-goals (MVP)
 
