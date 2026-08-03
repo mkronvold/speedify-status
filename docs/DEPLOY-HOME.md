@@ -41,14 +41,16 @@ Suggested layout after checkout:
 
 ## LAN DNS and NPM
 
-| Item            | Value                                                                       |
-| --------------- | --------------------------------------------------------------------------- |
-| AdGuard rewrite | `speedify.lan` → docker.lan IP                                              |
-| NPM domain      | `speedify.lan`                                                              |
-| NPM scheme      | `http`                                                                      |
-| NPM forward     | Docker DNS name **`web`** port **`80`** (compose project `speedify-status`) |
-| SSL             | Off / Force SSL off                                                         |
-| Websockets      | Optional / off (not required for MVP)                                       |
+| Item            | Value                                                                                            |
+| --------------- | ------------------------------------------------------------------------------------------------ |
+| docker.lan IP   | `10.0.0.202` (lab)                                                                               |
+| AdGuard rewrite | `speedify.lan` → `10.0.0.202`                                                                    |
+| NPM domain      | `speedify.lan` (LAN only — not kronvold.org)                                                     |
+| NPM scheme      | `http`                                                                                           |
+| NPM forward     | Compose container **`speedify-status-web-1:80`** (or Docker DNS service name `web` on proxy net) |
+| NPM conf (lab)  | `/data/nginx/proxy_host/4.conf` (proxy_host id may vary)                                         |
+| SSL             | Off / Force SSL off                                                                              |
+| Websockets      | Optional / off (not required for MVP)                                                            |
 
 NPM admin (internal): `http://npm.lan:81`. AdGuard UI: `http://adguard.lan`.
 
@@ -71,6 +73,8 @@ GHCR images (on `main`):
 ```bash
 ssh user@docker.lan
 mkdir -p ~/src && cd ~/src
+# Prefer git when the host has remote auth; otherwise rsync/scp tree from a build machine:
+#   rsync -a --delete ./ user@docker.lan:~/src/speedify-status/
 git clone https://github.com/mkronvold/speedify-status.git speedify-status   # or: git pull
 cd ~/src/speedify-status
 
@@ -82,6 +86,8 @@ chmod 600 deploy/env/api.env
 docker network inspect nginxproxy_proxy-net >/dev/null
 
 cd deploy/compose
+# scripts are LF (Unix); if copied from Windows without .gitattributes, run: sed -i 's/\r$//' *.sh
+chmod +x up.sh down.sh autoupdate.sh
 ./up.sh
 docker compose -f compose.prod.yml --env-file images.env ps
 ```
@@ -98,11 +104,11 @@ Compose uses `restart: unless-stopped`; keep Docker enabled on boot.
 
 ## NPM + AdGuard checklist
 
-1. **AdGuard** → rewrite `speedify.lan` to the docker.lan host IP.
+1. **AdGuard** → rewrite `speedify.lan` → `10.0.0.202` (docker.lan).
 2. **NPM** → Proxy Host:
    - Domain: `speedify.lan`
    - Scheme: `http`
-   - Forward hostname: `web` (or the compose container name NPM resolves on `nginxproxy_proxy-net`)
+   - Forward hostname: `speedify-status-web-1` (or service `web` on `nginxproxy_proxy-net`)
    - Forward port: `80`
    - SSL: none / Force SSL off
    - Websockets: off (optional)
@@ -134,6 +140,20 @@ Default env (written only if `/etc/speedify-status-agent.env` is missing):
 
 ```text
 INGEST_URL=http://speedify.lan/api/ingest/sample
+```
+
+Paths after install:
+
+| Path                                | Role                               |
+| ----------------------------------- | ---------------------------------- |
+| `/usr/bin/speedify-status-agent`    | binary                             |
+| `/etc/init.d/speedify-status-agent` | procd init                         |
+| `/etc/speedify-status-agent.env`    | env (not overwritten on reinstall) |
+
+If gw0 cannot resolve `speedify.lan` via AdGuard yet, pin it in `/etc/hosts`:
+
+```text
+10.0.0.202 speedify.lan
 ```
 
 Details: [`deploy/gw0/README.md`](../deploy/gw0/README.md).
