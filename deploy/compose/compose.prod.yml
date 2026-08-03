@@ -1,6 +1,8 @@
 name: speedify-status
 
-# Home lab (docker.lan):
+# Production-style compose for a Docker host + reverse proxy.
+# Public consumers: see QUICKSTART.md. Example lab names below are illustrative.
+# Home lab (docker.lan) example:
 # - External proxy network owned by Nginx Proxy Manager: nginxproxy_proxy-net
 # - NPM host: speedify.lan → forward HTTP to compose service "web:80" (no SSL)
 # - AdGuard rewrite: speedify.lan → docker.lan IP

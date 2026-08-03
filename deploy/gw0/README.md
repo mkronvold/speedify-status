@@ -1,81 +1,70 @@
-# gw0 agent install
+# Agent install (Speedify host)
 
-Target: OpenWrt **x86_64** host `gw0` (OpenWrt 24.10). Build with **`GOARCH=amd64`**
-(not arm64). The agent is **host-native** (not containerized) and does not touch the
-existing `speedify_exporter` on :9961.
+Host-native Go agent for the machine running Speedify / `speedify_cli`. **Not** containerized. Does not touch an existing Prometheus `speedify_exporter` (or similar).
+
+Public path: **[QUICKSTART.md](../../QUICKSTART.md)**.
 
 ## Cross-compile
 
-On a Linux/macOS/WSL build host with Go 1.25+:
+Pick **your** router architecture:
 
 ```bash
 cd apps/agent
+
+# x86_64 / amd64 (many OpenWrt x86 images, mini-PCs)
 GOOS=linux GOARCH=amd64 go build -o speedify-status-agent .
+
+# aarch64 / arm64 (many ARM SBCs and some OpenWrt boards)
+GOOS=linux GOARCH=arm64 go build -o speedify-status-agent .
 ```
 
 ## Install (preferred)
 
-`install.sh` is idempotent: installs binary + procd init, writes env only if missing,
-enables and restarts the service.
+`install.sh` is idempotent: installs binary + procd init, writes env **only if missing**, enables and restarts the service.
 
 ```bash
-# from repo root on a machine that can scp to gw0
+# from repo root on a machine that can scp to the router
 scp apps/agent/speedify-status-agent \
     deploy/gw0/install.sh \
     deploy/gw0/speedify-status-agent.init \
     deploy/gw0/speedify-status-agent.env.example \
-    root@gw0:/tmp/speedify-status/
+    root@ROUTER:/tmp/speedify-status/
 
-ssh root@gw0 'mkdir -p /tmp/speedify-status && cd /tmp/speedify-status && \
+ssh root@ROUTER 'mkdir -p /tmp/speedify-status && cd /tmp/speedify-status && \
   AGENT_BIN=./speedify-status-agent sh ./install.sh'
 ```
 
-Or pipe the installer after copying the binary:
-
-```bash
-scp apps/agent/speedify-status-agent root@gw0:/tmp/speedify-status-agent
-ssh root@gw0 'sh -s' < deploy/gw0/install.sh
-# if init/env.example are not next to install.sh on the remote, scp the full set as above
-```
-
-Environment variables for `install.sh`:
-
-| Var         | Meaning                                       |
-| ----------- | --------------------------------------------- |
-| `AGENT_BIN` | Path to binary (default: nearby / `/tmp/...`) |
-| `AGENT_SRC` | Optional download URL if binary not present   |
-| `RESTART=0` | Install + enable only; skip start/restart     |
+| Var         | Meaning                                                         |
+| ----------- | --------------------------------------------------------------- |
+| `AGENT_BIN` | Path to binary (default: nearby / `/tmp/speedify-status-agent`) |
+| `AGENT_SRC` | Optional download URL if binary not present                     |
+| `RESTART=0` | Install + enable only; skip start/restart                       |
 
 ## Manual install (equivalent)
 
 ```bash
-scp apps/agent/speedify-status-agent root@gw0:/usr/bin/
-scp deploy/gw0/speedify-status-agent.env.example root@gw0:/etc/speedify-status-agent.env
-scp deploy/gw0/speedify-status-agent.init root@gw0:/etc/init.d/speedify-status-agent
-ssh root@gw0 'chmod +x /usr/bin/speedify-status-agent /etc/init.d/speedify-status-agent && \
+scp apps/agent/speedify-status-agent root@ROUTER:/usr/bin/
+scp deploy/gw0/speedify-status-agent.env.example root@ROUTER:/etc/speedify-status-agent.env
+scp deploy/gw0/speedify-status-agent.init root@ROUTER:/etc/init.d/speedify-status-agent
+ssh root@ROUTER 'chmod +x /usr/bin/speedify-status-agent /etc/init.d/speedify-status-agent && \
   /etc/init.d/speedify-status-agent enable && /etc/init.d/speedify-status-agent start'
 ```
 
 ## Ingest URL
 
-Default in the example env:
+Example env uses a **placeholder** LAN hostname — change it to whatever you put on the reverse proxy:
 
 ```text
 INGEST_URL=http://speedify.lan/api/ingest/sample
 ```
 
-That hits the web container nginx proxy (`/api` → `api:4090`). Ensure AdGuard rewrites
-`speedify.lan` → `10.0.0.202` (docker.lan) and NPM forwards `speedify.lan` →
-`speedify-status-web-1:80` (http, SSL off).
+That hits the **web** nginx proxy (`/api` → `api:4090`). Ensure DNS/rewrite and the proxy forward to `web:80` (HTTP is fine on LAN).
 
-If DNS is not visible from gw0 yet, add:
+If the router cannot resolve the name yet:
 
 ```text
-# /etc/hosts on gw0
-10.0.0.202 speedify.lan
+# /etc/hosts on the Speedify host
+<docker-host-ip>  speedify.lan
 ```
 
-Installed paths: `/usr/bin/speedify-status-agent`, `/etc/init.d/speedify-status-agent`,
-`/etc/speedify-status-agent.env`.
-
-See [docs/DEPLOY-HOME.md](../../docs/DEPLOY-HOME.md) for the full home checklist.
+Installed paths: `/usr/bin/speedify-status-agent`, `/etc/init.d/speedify-status-agent`, `/etc/speedify-status-agent.env`.
