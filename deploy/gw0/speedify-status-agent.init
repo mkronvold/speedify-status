@@ -1,9 +1,10 @@
 #!/bin/sh /etc/rc.common
-# OpenWrt procd init example for speedify-status-agent
-# Install:
+# OpenWrt procd init for speedify-status-agent
+# Prefer: sh deploy/gw0/install.sh  (idempotent)
+# Manual:
 #   cp speedify-status-agent /usr/bin/speedify-status-agent
 #   cp speedify-status-agent.init /etc/init.d/speedify-status-agent
-#   cp speedify-status-agent.env.example /etc/speedify-status-agent.env
+#   cp speedify-status-agent.env.example /etc/speedify-status-agent.env   # if missing
 #   chmod +x /usr/bin/speedify-status-agent /etc/init.d/speedify-status-agent
 #   /etc/init.d/speedify-status-agent enable
 #   /etc/init.d/speedify-status-agent start

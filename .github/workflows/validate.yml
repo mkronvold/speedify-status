@@ -55,6 +55,6 @@ jobs:
         working-directory: apps/agent
         run: go test ./...
 
-      - name: Agent linux build
+      - name: Agent linux amd64 build (gw0)
         working-directory: apps/agent
-        run: go build -o /tmp/speedify-status-agent .
+        run: GOOS=linux GOARCH=amd64 go build -o /tmp/speedify-status-agent .

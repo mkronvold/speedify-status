@@ -2,22 +2,24 @@
 
 Purpose-built **Speedify WAN health** dashboard (independent of WDMBG).
 
-- **Go agent** on OpenWrt `gw0` samples adapters + interface Mbps + ICMP latency
+- **Go agent** on OpenWrt `gw0` (x86_64 / **amd64**) samples adapters + interface Mbps + ICMP latency
 - **Fastify API** keeps an in-memory **1s ring ~1 hour** (no Postgres in MVP)
 - **React** compact dark UI: window + refresh controls and a sortable adapter table
 
 Stack follows [mkronvold/techstack](https://github.com/mkronvold/techstack) product-app shape (pnpm@10 + Turbo, Node 26, GHCR). Do not duplicate full policy here.
 
-Planned public host: `speedify.kronvold.org` (document only; wire NPM when ready).
+Home LAN host: `speedify.lan` (NPM → web:80, no SSL). Planned public host: `speedify.kronvold.org` (document only).
+
+**Home deploy:** [docs/DEPLOY-HOME.md](./docs/DEPLOY-HOME.md)
 
 ## Architecture
 
 ```
-gw0 (OpenWrt)                     lab host (docker.lan)
+gw0 (OpenWrt x86_64)              lab host (docker.lan)
 ┌─────────────────────┐           ┌──────────────────────────────┐
 │ speedify-status-    │  POST     │ api  :4090  in-memory ring   │
 │ agent (procd)       │──────────▶│ web  :80    React static     │
-│ speedify_cli +      │  /api/    │ GHCR images                  │
+│ speedify_cli +      │  /api/    │ via NPM speedify.lan         │
 │ /proc/net/dev + ICMP│  ingest   └──────────────────────────────┘
 └─────────────────────┘
 ```
@@ -30,7 +32,8 @@ gw0 (OpenWrt)                     lab host (docker.lan)
 | `packages/contracts` | Shared Zod schemas                 |
 | `packages/config`    | Defaults / env helpers             |
 | `deploy/compose`     | api+web Compose for docker.lan     |
-| `deploy/gw0`         | Agent install + procd example      |
+| `deploy/gw0`         | Agent install + procd (amd64)      |
+| `docs/DEPLOY-HOME.md`| Home lab bring-up checklist        |
 
 ## Dashboard columns (MVP)
 
@@ -68,9 +71,11 @@ Open http://127.0.0.1:5174/
 
 ```bash
 cd apps/agent && go test ./...
+# cross-compile for gw0 (OpenWrt x86_64):
+GOOS=linux GOARCH=amd64 go build -o speedify-status-agent .
 ```
 
-Real path uses `/usr/share/speedify/speedify_cli show adapters`, `/proc/net/dev` byte deltas for Mbps, and per-iface ICMP (`ping -I ethN`) to the interface gateway (fallback `1.1.1.1`). See `deploy/gw0/`.
+Real path uses `/usr/share/speedify/speedify_cli show adapters`, `/proc/net/dev` byte deltas for Mbps, and per-iface ICMP (`ping -I ethN`) to the interface gateway (fallback `1.1.1.1`). See [`deploy/gw0/`](./deploy/gw0/) and [`docs/DEPLOY-HOME.md`](./docs/DEPLOY-HOME.md).
 
 ## API
 
@@ -90,6 +95,8 @@ cp deploy/env/api.env.example deploy/env/api.env
 cd deploy/compose && ./up.sh
 ```
 
+Full checklist (NPM `speedify.lan`, AdGuard, gw0 agent): **[docs/DEPLOY-HOME.md](./docs/DEPLOY-HOME.md)**.
+
 Images (on `main`):
 
 - `ghcr.io/mkronvold/speedify-status-api`
@@ -97,17 +104,17 @@ Images (on `main`):
 
 ## Env vars
 
-| Var                            | Where | Default                                   |
-| ------------------------------ | ----- | ----------------------------------------- |
-| `SPEEDIFY_STATUS_API_HOST`     | api   | `0.0.0.0`                                 |
-| `SPEEDIFY_STATUS_API_PORT`     | api   | `4090`                                    |
-| `SPEEDIFY_STATUS_INGEST_TOKEN` | api   | unset                                     |
-| `INGEST_URL`                   | agent | `http://127.0.0.1:4090/api/ingest/sample` |
-| `INGEST_TOKEN`                 | agent | unset                                     |
-| `INTERVAL_SEC`                 | agent | `1`                                       |
-| `SPEEDIFY_CLI`                 | agent | `/usr/share/speedify/speedify_cli`        |
-| `LATENCY_FALLBACK_HOST`        | agent | `1.1.1.1`                                 |
-| `SIMULATE`                     | agent | `false`                                   |
+| Var                            | Where | Default                                         |
+| ------------------------------ | ----- | ----------------------------------------------- |
+| `SPEEDIFY_STATUS_API_HOST`     | api   | `0.0.0.0`                                       |
+| `SPEEDIFY_STATUS_API_PORT`     | api   | `4090`                                          |
+| `SPEEDIFY_STATUS_INGEST_TOKEN` | api   | unset                                           |
+| `INGEST_URL`                   | agent | `http://speedify.lan/api/ingest/sample` (home)  |
+| `INGEST_TOKEN`                 | agent | unset                                           |
+| `INTERVAL_SEC`                 | agent | `1`                                             |
+| `SPEEDIFY_CLI`                 | agent | `/usr/share/speedify/speedify_cli`              |
+| `LATENCY_FALLBACK_HOST`        | agent | `1.1.1.1`                                       |
+| `SIMULATE`                     | agent | `false`                                         |
 
 ## Non-goals (MVP)
 
