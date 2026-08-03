@@ -1,5 +1,7 @@
 # Home deployment (docker.lan + gw0)
 
+> Lab-specific checklist. **General public install:** [QUICKSTART.md](../QUICKSTART.md) · design: [DESIGN.md](../DESIGN.md).
+
 Home-lab pattern matches WDMBG: app stack on `docker.lan`, host-native agent on OpenWrt `gw0`,
 front door via Nginx Proxy Manager on `speedify.lan` (http, no SSL).
 

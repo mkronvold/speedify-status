@@ -1,5 +1,7 @@
 # gw0 agent install
 
+> Public path (any host): [QUICKSTART.md](../../QUICKSTART.md). This page is the OpenWrt/`gw0` detail.
+
 Target: OpenWrt **x86_64** host `gw0` (OpenWrt 24.10). Build with **`GOARCH=amd64`**
 (not arm64). The agent is **host-native** (not containerized) and does not touch the
 existing `speedify_exporter` on :9961.
