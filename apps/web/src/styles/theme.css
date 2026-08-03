@@ -1,0 +1,38 @@
+/*
+ * Compact dark theme tokens (aligned with mkronvold/themes dark palette).
+ * Prefer @mkronvold/themes when published; until then keep a minimal dark set.
+ */
+
+:root,
+:root[data-theme='dark'],
+[data-theme='dark'] {
+  color-scheme: dark;
+  --theme-bg: #07111f;
+  --theme-chrome: #07111f;
+  --theme-chrome-text: #e8f1ff;
+  --theme-chrome-muted-text: #a9bad4;
+  --theme-surface: #0c1628;
+  --theme-surface-muted: #111d32;
+  --theme-input-bg: #0a1526;
+  --theme-text: #e8f1ff;
+  --theme-muted-text: #a9bad4;
+  --theme-link: #9dc4ff;
+  --theme-border: #20324f;
+  --theme-border-muted: rgba(157, 196, 255, 0.16);
+  --theme-accent: #5ea7ff;
+  --theme-active-bg: #0c1628;
+  --theme-active-border: #5ea7ff;
+  --theme-button-bg: #112845;
+  --theme-button-hover-bg: #17365d;
+  --theme-button-primary-bg: #2563eb;
+  --theme-button-primary-border: rgba(96, 165, 250, 0.3);
+  --theme-button-primary-text: #e0f2fe;
+  --theme-focus-ring: #5ea7ff;
+  --theme-shadow: 0 20px 50px rgba(2, 6, 23, 0.35);
+  --theme-success-text: #dcfce7;
+  --theme-success-bg: rgba(22, 101, 52, 0.32);
+  --theme-warning-text: #fde68a;
+  --theme-warning-bg: rgba(120, 53, 15, 0.35);
+  --theme-error-text: #fecaca;
+  --theme-error-bg: rgba(127, 29, 29, 0.34);
+}

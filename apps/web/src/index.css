@@ -1,0 +1,233 @@
+@import './styles/theme.css';
+
+:root {
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+  line-height: 1.4;
+  font-weight: 400;
+  color: var(--theme-text);
+  background: var(--theme-bg);
+  font-size: 13px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--theme-text);
+  background: radial-gradient(
+    circle at top,
+    color-mix(in srgb, var(--theme-accent) 14%, var(--theme-bg)) 0%,
+    var(--theme-bg) 55%
+  );
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0.85rem 1rem 1.5rem;
+}
+
+.hero {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: flex-end;
+  margin-bottom: 0.75rem;
+}
+
+.hero h1 {
+  margin: 0.15rem 0;
+  font-size: 1.35rem;
+  letter-spacing: 0.03em;
+}
+
+.eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.68rem;
+  color: var(--theme-accent);
+}
+
+.subtitle {
+  margin: 0.2rem 0 0;
+  color: var(--theme-muted-text);
+  font-size: 0.85rem;
+}
+
+.hero-meta {
+  display: grid;
+  gap: 0.4rem;
+  justify-items: end;
+}
+
+.hero-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.control {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.control-label {
+  margin: 0;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--theme-muted-text);
+}
+
+.toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.toggle button {
+  font: inherit;
+  font-size: 0.75rem;
+  padding: 0.28rem 0.45rem;
+  border-radius: 0.4rem;
+  border: 1px solid var(--theme-border);
+  background: var(--theme-button-bg);
+  color: var(--theme-text);
+  cursor: pointer;
+}
+
+.toggle button:hover {
+  background: var(--theme-button-hover-bg);
+}
+
+.toggle button.active {
+  border-color: var(--theme-active-border);
+  background: color-mix(in srgb, var(--theme-accent) 22%, var(--theme-button-bg));
+  color: var(--theme-chrome-text);
+}
+
+.meta-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  color: var(--theme-muted-text);
+  font-size: 0.78rem;
+  margin-bottom: 0.55rem;
+}
+
+.meta-line .ok {
+  color: var(--theme-success-text);
+}
+
+.meta-line .warn {
+  color: var(--theme-warning-text);
+}
+
+.meta-line .err {
+  color: var(--theme-error-text);
+}
+
+.panel {
+  background: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+  border-radius: 0.65rem;
+  box-shadow: var(--theme-shadow);
+  overflow: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.table th,
+.table td {
+  padding: 0.4rem 0.55rem;
+  border-bottom: 1px solid var(--theme-border-muted);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table th {
+  position: sticky;
+  top: 0;
+  background: var(--theme-surface-muted);
+  color: var(--theme-muted-text);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+}
+
+.table th.sorted {
+  color: var(--theme-accent);
+}
+
+.table td.num,
+.table th.num {
+  text-align: right;
+}
+
+.table tbody tr:hover {
+  background: color-mix(in srgb, var(--theme-accent) 8%, transparent);
+}
+
+.table .muted {
+  color: var(--theme-muted-text);
+}
+
+.empty {
+  padding: 1.25rem;
+  color: var(--theme-muted-text);
+  text-align: center;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.3rem;
+  font-size: 0.72rem;
+  background: var(--theme-surface-muted);
+  border: 1px solid var(--theme-border-muted);
+}
+
+.badge.connected {
+  color: var(--theme-success-text);
+  background: var(--theme-success-bg);
+}
+
+.badge.disconnected,
+.badge.offline {
+  color: var(--theme-error-text);
+  background: var(--theme-error-bg);
+}
+
+.footer {
+  margin-top: 0.65rem;
+  color: var(--theme-muted-text);
+  font-size: 0.7rem;
+}

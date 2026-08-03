@@ -1,0 +1,43 @@
+name: speedify-status
+
+networks:
+  app:
+    driver: bridge
+  proxy:
+    external: true
+    name: nginxproxy_proxy-net
+
+services:
+  api:
+    image: ${SPEEDIFY_STATUS_API_IMAGE:-ghcr.io/mkronvold/speedify-status-api:main}
+    restart: unless-stopped
+    env_file:
+      - ../env/api.env
+    environment:
+      SPEEDIFY_STATUS_API_HOST: 0.0.0.0
+      SPEEDIFY_STATUS_API_PORT: 4090
+    networks:
+      - app
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:4090/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  web:
+    image: ${SPEEDIFY_STATUS_WEB_IMAGE:-ghcr.io/mkronvold/speedify-status-web:main}
+    restart: unless-stopped
+    depends_on:
+      - api
+    networks:
+      - app
+      - proxy
+    # Optional labels for nginx-proxy / NPM style routing:
+    # VIRTUAL_HOST=speedify.kronvold.org
+    # VIRTUAL_PORT=80
