@@ -31,5 +31,6 @@ apps/agent/speedify-status-agent.exe
 apps/agent/bin/
 
 deploy/compose/logs/
+deploy/compose/.autoupdate.lock
 deploy/env/.env
 deploy/env/api.env
