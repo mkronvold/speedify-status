@@ -65,6 +65,17 @@ INGEST_URL=http://speedify.lan/api/ingest/sample
 ```
 
 That hits the web container nginx proxy (`/api` → `api:4090`). Ensure AdGuard rewrites
-`speedify.lan` → docker.lan and NPM forwards `speedify.lan` → `web:80` (http).
+`speedify.lan` → `10.0.0.202` (docker.lan) and NPM forwards `speedify.lan` →
+`speedify-status-web-1:80` (http, SSL off).
+
+If DNS is not visible from gw0 yet, add:
+
+```text
+# /etc/hosts on gw0
+10.0.0.202 speedify.lan
+```
+
+Installed paths: `/usr/bin/speedify-status-agent`, `/etc/init.d/speedify-status-agent`,
+`/etc/speedify-status-agent.env`.
 
 See [docs/DEPLOY-HOME.md](../../docs/DEPLOY-HOME.md) for the full home checklist.
