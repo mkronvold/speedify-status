@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatAge, formatDailyGb, formatMbps, formatMs } from './format';
+import { formatAge, formatMbps, formatMs } from './format';
 
 describe('format helpers', () => {
   it('formats mbps and ms nulls', () => {
@@ -9,8 +9,7 @@ describe('format helpers', () => {
     expect(formatMs(8.2)).toBe('8.2');
   });
 
-  it('formats daily GB and age', () => {
-    expect(formatDailyGb(5_000_000_000)).toBe('5.00');
+  it('formats age', () => {
     expect(formatAge(null)).toBe('no samples');
     expect(formatAge(500)).toBe('just now');
     expect(formatAge(12_000)).toBe('12s ago');

@@ -8,8 +8,8 @@ Install path: [QUICKSTART.md](./QUICKSTART.md). Overview: [README.md](./README.m
 
 - Show **multi-WAN health** for Speedify adapters at a glance.
 - Per WAN, over a chosen window:
-  - **Latency** min / avg / max (ms)
-  - **Throughput** download Mbps min / avg / max; upload Mbps avg
+  - **Latency** now / avg / max (ms)
+  - **Throughput** download and upload Mbps now / avg / max
   - **Priority** and **state** (and related working priority)
 - Sample on the order of **1 Hz** with enough history for short operational windows (up to ~1 hour).
 - Stay **small**: one agent binary, one API process, one static web UI.
@@ -53,7 +53,7 @@ Default interval is **1 second** (`INTERVAL_SEC`, minimum clamped for safety). T
 - Fixed-size **in-memory ring**: **3600** slots ≈ **1 hour @ 1s** (`RING_SAMPLE_COUNT`).
 - No disk persistence in MVP; process restart clears history.
 - Query windows: `5s`, `30s`, `5m`, `15m`, `30m`, `1h`.
-- `GET /api/status?window=…` aggregates per-adapter min/avg/max over samples whose agent timestamps fall in the window.
+- `GET /api/status?window=…` aggregates per-adapter now/avg/max over samples whose agent timestamps fall in the window.
 
 ### Presentation (web)
 

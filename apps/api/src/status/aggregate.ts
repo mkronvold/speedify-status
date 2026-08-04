@@ -1,5 +1,4 @@
 import {
-  avgOrNull,
   metricStats,
   type AdapterStatus,
   type QueryWindow,
@@ -18,6 +17,10 @@ interface AdapterAccum {
   latency: number[];
   dl: number[];
   ul: number[];
+  /** Latest-by-ts sample values (may be null for latency). */
+  lastLatency: number | null;
+  lastDl: number | null;
+  lastUl: number | null;
   usageDailyBytes: number | null;
   usageDailyLimitBytes: number | null;
   lastTs: number;
@@ -36,13 +39,16 @@ function bumpAdapter(map: Map<string, AdapterAccum>, sample: StoredSample): void
         latency: [],
         dl: [],
         ul: [],
+        lastLatency: a.latencyMs,
+        lastDl: Number.isFinite(a.dlMbps) ? a.dlMbps : null,
+        lastUl: Number.isFinite(a.ulMbps) ? a.ulMbps : null,
         usageDailyBytes: a.usageDailyBytes ?? null,
         usageDailyLimitBytes: a.usageDailyLimitBytes ?? null,
         lastTs: sample.ts,
       };
       map.set(a.id, acc);
     }
-    // Prefer latest metadata
+    // Prefer latest-by-ts metadata and "now" metric values
     if (sample.ts >= acc.lastTs) {
       acc.name = a.name;
       acc.state = a.state;
@@ -50,6 +56,9 @@ function bumpAdapter(map: Map<string, AdapterAccum>, sample: StoredSample): void
       acc.workingPriority = a.workingPriority;
       acc.usageDailyBytes = a.usageDailyBytes ?? null;
       acc.usageDailyLimitBytes = a.usageDailyLimitBytes ?? null;
+      acc.lastLatency = a.latencyMs;
+      acc.lastDl = Number.isFinite(a.dlMbps) ? a.dlMbps : null;
+      acc.lastUl = Number.isFinite(a.ulMbps) ? a.ulMbps : null;
       acc.lastTs = sample.ts;
     }
     if (a.latencyMs !== null && Number.isFinite(a.latencyMs)) {
@@ -67,9 +76,9 @@ export function toAdapterStatus(acc: AdapterAccum): AdapterStatus {
     state: acc.state,
     priority: acc.priority,
     workingPriority: acc.workingPriority,
-    latencyMs: metricStats(acc.latency),
-    dlMbps: metricStats(acc.dl),
-    ulMbps: { avg: avgOrNull(acc.ul) },
+    latencyMs: metricStats(acc.latency, { now: acc.lastLatency }),
+    dlMbps: metricStats(acc.dl, { now: acc.lastDl }),
+    ulMbps: metricStats(acc.ul, { now: acc.lastUl }),
     usageDailyBytes: acc.usageDailyBytes,
     usageDailyLimitBytes: acc.usageDailyLimitBytes,
     sampleCount: Math.max(acc.dl.length, acc.ul.length, acc.latency.length, 1),
@@ -101,6 +110,9 @@ export function buildStatus(
         latency: a.latencyMs !== null ? [a.latencyMs] : [],
         dl: [a.dlMbps],
         ul: [a.ulMbps],
+        lastLatency: a.latencyMs,
+        lastDl: Number.isFinite(a.dlMbps) ? a.dlMbps : null,
+        lastUl: Number.isFinite(a.ulMbps) ? a.ulMbps : null,
         usageDailyBytes: a.usageDailyBytes ?? null,
         usageDailyLimitBytes: a.usageDailyLimitBytes ?? null,
         lastTs: latest.ts,

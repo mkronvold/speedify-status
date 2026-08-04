@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { QUERY_WINDOWS, type AdapterStatus, type QueryWindow } from '@speedify-status/contracts';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchHealth, fetchStatus } from './api/client';
-import { formatAge, formatDailyGb, formatMbps, formatMs } from './components/format';
+import { formatAge, formatMbps, formatMs } from './components/format';
 import {
   THEME_IDS,
   THEME_LABELS,
@@ -27,14 +27,15 @@ type SortKey =
   | 'name'
   | 'state'
   | 'priority'
-  | 'latMin'
+  | 'latNow'
   | 'latAvg'
   | 'latMax'
-  | 'dlMin'
+  | 'dlNow'
   | 'dlAvg'
   | 'dlMax'
+  | 'ulNow'
   | 'ulAvg'
-  | 'daily';
+  | 'ulMax';
 type SortDir = 'asc' | 'desc';
 
 const WINDOW_KEY = 'speedify-status.window';
@@ -70,22 +71,24 @@ function sortValue(row: AdapterStatus, key: SortKey): string | number {
       return row.state.toLowerCase();
     case 'priority':
       return row.workingPriority || row.priority;
-    case 'latMin':
-      return row.latencyMs.min ?? Number.POSITIVE_INFINITY;
+    case 'latNow':
+      return row.latencyMs.now ?? Number.POSITIVE_INFINITY;
     case 'latAvg':
       return row.latencyMs.avg ?? Number.POSITIVE_INFINITY;
     case 'latMax':
       return row.latencyMs.max ?? Number.POSITIVE_INFINITY;
-    case 'dlMin':
-      return row.dlMbps.min ?? -1;
+    case 'dlNow':
+      return row.dlMbps.now ?? -1;
     case 'dlAvg':
       return row.dlMbps.avg ?? -1;
     case 'dlMax':
       return row.dlMbps.max ?? -1;
+    case 'ulNow':
+      return row.ulMbps.now ?? -1;
     case 'ulAvg':
       return row.ulMbps.avg ?? -1;
-    case 'daily':
-      return row.usageDailyBytes ?? -1;
+    case 'ulMax':
+      return row.ulMbps.max ?? -1;
     default:
       return 0;
   }
@@ -270,14 +273,15 @@ export function App() {
                 {th('name', 'Name')}
                 {th('state', 'State')}
                 {th('priority', 'Priority')}
-                {th('latMin', 'Lat min', true)}
+                {th('latNow', 'Lat now', true)}
                 {th('latAvg', 'avg', true)}
                 {th('latMax', 'max', true)}
-                {th('dlMin', 'DL min', true)}
+                {th('dlNow', 'DL now', true)}
                 {th('dlAvg', 'avg', true)}
                 {th('dlMax', 'max', true)}
-                {th('ulAvg', 'UL avg', true)}
-                {th('daily', 'Daily GB', true)}
+                {th('ulNow', 'UL now', true)}
+                {th('ulAvg', 'avg', true)}
+                {th('ulMax', 'max', true)}
               </tr>
             </thead>
             <tbody>
@@ -295,14 +299,15 @@ export function App() {
                   <td title={`configured: ${row.priority}`}>
                     {row.workingPriority || row.priority}
                   </td>
-                  <td className="num">{formatMs(row.latencyMs.min)}</td>
+                  <td className="num">{formatMs(row.latencyMs.now)}</td>
                   <td className="num">{formatMs(row.latencyMs.avg)}</td>
                   <td className="num">{formatMs(row.latencyMs.max)}</td>
-                  <td className="num">{formatMbps(row.dlMbps.min)}</td>
+                  <td className="num">{formatMbps(row.dlMbps.now)}</td>
                   <td className="num">{formatMbps(row.dlMbps.avg)}</td>
                   <td className="num">{formatMbps(row.dlMbps.max)}</td>
+                  <td className="num">{formatMbps(row.ulMbps.now)}</td>
                   <td className="num">{formatMbps(row.ulMbps.avg)}</td>
-                  <td className="num">{formatDailyGb(row.usageDailyBytes)}</td>
+                  <td className="num">{formatMbps(row.ulMbps.max)}</td>
                 </tr>
               ))}
             </tbody>
@@ -311,8 +316,7 @@ export function App() {
       </div>
 
       <p className="footer">
-        Window {window} · latency ms · rates Mbps · daily GB · sha{' '}
-        {import.meta.env.VITE_GIT_SHA ?? 'dev'}
+        Window {window} · latency ms · rates Mbps · sha {import.meta.env.VITE_GIT_SHA ?? 'dev'}
       </p>
     </div>
   );
