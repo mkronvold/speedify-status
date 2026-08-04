@@ -208,7 +208,7 @@ body {
 
 .table th,
 .table td {
-  padding: 0.4rem 0.55rem;
+  padding: 0.35rem 0.4rem;
   border-bottom: 1px solid var(--theme-border-muted);
   text-align: left;
   white-space: nowrap;
@@ -234,26 +234,39 @@ body {
 .table td.num,
 .table th.num {
   text-align: right;
+  min-width: 2.75rem;
 }
 
 .th-lines {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  line-height: 1.15;
-  gap: 0.1rem;
+  line-height: 1.1;
+  gap: 0.05rem;
 }
 
-.th-main {
+.th-family {
   white-space: nowrap;
+  font-weight: 600;
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+}
+
+.th-role {
+  white-space: nowrap;
+  font-weight: 500;
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  opacity: 0.92;
 }
 
 .th-unit {
-  font-size: 0.7rem;
-  opacity: 0.7;
+  font-size: 0.58rem;
+  opacity: 0.68;
   font-weight: 500;
   text-transform: lowercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
 }
 
 .table tbody tr:hover {
