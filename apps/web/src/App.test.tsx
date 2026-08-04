@@ -116,7 +116,7 @@ describe('App', () => {
 
     renderApp();
     await waitFor(() => {
-      expect(screen.getByText('Starlink')).toBeInTheDocument();
+      expect(screen.getByText('eth2:Starlink')).toBeInTheDocument();
     });
     expect(screen.getByText('Lat now')).toBeInTheDocument();
     expect(screen.getByText('DL now')).toBeInTheDocument();

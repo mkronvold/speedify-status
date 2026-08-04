@@ -63,10 +63,14 @@ function loadRefresh(): DisplayRefreshId {
   return '5s';
 }
 
+function formatAdapterLabel(row: Pick<AdapterStatus, 'id' | 'name'>): string {
+  return `${row.id}:${row.name}`;
+}
+
 function sortValue(row: AdapterStatus, key: SortKey): string | number {
   switch (key) {
     case 'name':
-      return row.name.toLowerCase();
+      return formatAdapterLabel(row).toLowerCase();
     case 'state':
       return row.state.toLowerCase();
     case 'priority':
@@ -287,12 +291,7 @@ export function App() {
             <tbody>
               {rows.map((row) => (
                 <tr key={row.id}>
-                  <td>
-                    {row.name}{' '}
-                    <span className="muted" title={row.id}>
-                      ({row.id})
-                    </span>
-                  </td>
+                  <td title={row.id}>{formatAdapterLabel(row)}</td>
                   <td>
                     <span className={`badge ${stateClass(row.state)}`}>{row.state}</span>
                   </td>
