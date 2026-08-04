@@ -169,6 +169,23 @@ export function App() {
     </th>
   );
 
+  const thMetric = (key: SortKey, main: string, unit: string) => (
+    <th
+      key={key}
+      className={`num${sortKey === key ? ' sorted' : ''}`}
+      onClick={() => onSort(key)}
+      title="Sort"
+    >
+      <span className="th-lines">
+        <span className="th-main">
+          {main}
+          {sortKey === key ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}
+        </span>
+        <span className="th-unit">{unit}</span>
+      </span>
+    </th>
+  );
+
   const age = statusQuery.data?.lastSampleAgeMs ?? healthQuery.data?.lastSampleAgeMs ?? null;
   const healthOk = healthQuery.isSuccess;
   const state = statusQuery.data?.state;
@@ -273,15 +290,15 @@ export function App() {
                 {th('name', 'Name')}
                 {th('state', 'State')}
                 {th('priority', 'Priority')}
-                {th('latNow', 'Lat now', true)}
-                {th('latAvg', 'avg', true)}
-                {th('latMax', 'max', true)}
-                {th('dlNow', 'DL now', true)}
-                {th('dlAvg', 'avg', true)}
-                {th('dlMax', 'max', true)}
-                {th('ulNow', 'UL now', true)}
-                {th('ulAvg', 'avg', true)}
-                {th('ulMax', 'max', true)}
+                {thMetric('latNow', 'ping now', 'ms')}
+                {thMetric('latAvg', 'avg', 'ms')}
+                {thMetric('latMax', 'max', 'ms')}
+                {thMetric('dlNow', 'dl now', 'mbps')}
+                {thMetric('dlAvg', 'avg', 'mbps')}
+                {thMetric('dlMax', 'max', 'mbps')}
+                {thMetric('ulNow', 'ul now', 'mbps')}
+                {thMetric('ulAvg', 'avg', 'mbps')}
+                {thMetric('ulMax', 'max', 'mbps')}
               </tr>
             </thead>
             <tbody>
@@ -311,7 +328,7 @@ export function App() {
       </div>
 
       <p className="footer">
-        Window {window} · latency ms · rates Mbps · sha {import.meta.env.VITE_GIT_SHA ?? 'dev'}
+        Window {window} · ping ms · rates Mbps · sha {import.meta.env.VITE_GIT_SHA ?? 'dev'}
       </p>
     </div>
   );
