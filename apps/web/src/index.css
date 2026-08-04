@@ -44,38 +44,59 @@ body {
 }
 
 .hero {
+  display: grid;
+  gap: 0.55rem;
+  margin-bottom: 0.55rem;
+}
+
+.title-row {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  align-items: flex-end;
-  margin-bottom: 0.75rem;
 }
 
 .hero h1 {
-  margin: 0.15rem 0;
-  font-size: 1.35rem;
+  margin: 0;
+  font-size: 1.25rem;
   letter-spacing: 0.03em;
 }
 
-.eyebrow {
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: 0.68rem;
-  color: var(--theme-accent);
-}
-
-.subtitle {
-  margin: 0.2rem 0 0;
+.settings-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border-radius: 0.45rem;
+  border: 1px solid transparent;
+  background: transparent;
   color: var(--theme-muted-text);
-  font-size: 0.85rem;
+  cursor: pointer;
 }
 
-.hero-meta {
-  display: grid;
-  gap: 0.4rem;
-  justify-items: end;
+.settings-toggle:hover {
+  color: var(--theme-text);
+  background: var(--theme-button-hover-bg);
+  border-color: var(--theme-border);
+}
+
+.settings-toggle:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--theme-focus-ring) 45%, transparent);
+  outline-offset: 1px;
+  border-color: var(--theme-accent);
+  color: var(--theme-chrome-text);
+}
+
+.settings-toggle.active {
+  color: var(--theme-chrome-text);
+  border-color: var(--theme-active-border);
+  background: color-mix(in srgb, var(--theme-accent) 22%, var(--theme-button-bg));
+}
+
+.settings-gear-icon {
+  display: block;
 }
 
 .hero-controls {
@@ -83,7 +104,7 @@ body {
   flex-wrap: wrap;
   gap: 0.5rem;
   align-items: flex-end;
-  justify-content: flex-end;
+  justify-content: flex-start;
 }
 
 .control {
