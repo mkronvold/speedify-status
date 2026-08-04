@@ -17,7 +17,7 @@ import (
 	"github.com/mkronvold/speedify-status/apps/agent/internal/sample"
 )
 
-const version = "0.1.1"
+const version = "0.1.2"
 
 func main() {
 	var (
