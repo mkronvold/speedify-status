@@ -40,6 +40,7 @@ type SortDir = 'asc' | 'desc';
 
 const WINDOW_KEY = 'speedify-status.window';
 const REFRESH_KEY = 'speedify-status.refresh';
+const SETTINGS_OPEN_KEY = 'speedify-status.settingsOpen';
 
 function loadWindow(): QueryWindow {
   try {
@@ -61,6 +62,38 @@ function loadRefresh(): DisplayRefreshId {
     // ignore
   }
   return '5s';
+}
+
+function loadSettingsOpen(): boolean {
+  try {
+    const raw = localStorage.getItem(SETTINGS_OPEN_KEY);
+    if (raw === '1' || raw === 'true') return true;
+    if (raw === '0' || raw === 'false') return false;
+  } catch {
+    // ignore
+  }
+  return false;
+}
+
+function GearIcon() {
+  return (
+    <svg
+      className="settings-gear-icon"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  );
 }
 
 function sortValue(row: AdapterStatus, key: SortKey): string | number {
@@ -106,6 +139,7 @@ export function App() {
   const [window, setWindow] = useState<QueryWindow>(loadWindow);
   const [refreshId, setRefreshId] = useState<DisplayRefreshId>(loadRefresh);
   const [theme, setTheme] = useState<ThemeId>(() => resolveInitialTheme());
+  const [settingsOpen, setSettingsOpen] = useState<boolean>(loadSettingsOpen);
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
 
@@ -117,6 +151,18 @@ export function App() {
     persistTheme(next);
     applyTheme(next);
     setTheme(next);
+  }, []);
+
+  const toggleSettings = useCallback(() => {
+    setSettingsOpen((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(SETTINGS_OPEN_KEY, next ? '1' : '0');
+      } catch {
+        // ignore
+      }
+      return next;
+    });
   }, []);
 
   const refreshMs = DISPLAY_REFRESH_OPTIONS.find((o) => o.id === refreshId)?.ms ?? 5_000;
@@ -194,12 +240,19 @@ export function App() {
   return (
     <div className="app">
       <header className="hero">
-        <div>
-          <p className="eyebrow">WAN health</p>
+        <div className="title-row">
           <h1>Speedify Status</h1>
-          <p className="subtitle">Per-adapter latency and throughput over a sliding window</p>
+          <button
+            type="button"
+            className={`settings-gear${settingsOpen ? ' active' : ''}`}
+            aria-label="Settings"
+            aria-expanded={settingsOpen}
+            onClick={toggleSettings}
+          >
+            <GearIcon />
+          </button>
         </div>
-        <div className="hero-meta">
+        {settingsOpen ? (
           <div className="hero-controls">
             <div className="control theme-control">
               <label className="control-label" htmlFor="theme-select">
@@ -264,7 +317,7 @@ export function App() {
               </div>
             </div>
           </div>
-        </div>
+        ) : null}
       </header>
 
       <div className="meta-line">

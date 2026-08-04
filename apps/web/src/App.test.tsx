@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from './App';
 
 function renderApp() {
@@ -14,55 +14,112 @@ function renderApp() {
   );
 }
 
+function stubEmptyDashboardFetch() {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (input: RequestInfo) => {
+      const url = String(input);
+      if (url.includes('/api/health')) {
+        return new Response(
+          JSON.stringify({
+            status: 'ok',
+            service: 'speedify-status-api',
+            version: '0.0.0',
+            lastSampleAgeMs: null,
+            sampleCount: 0,
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      if (url.includes('/api/status')) {
+        return new Response(
+          JSON.stringify({
+            window: '30s',
+            generatedAt: new Date().toISOString(),
+            lastSampleTs: null,
+            lastSampleAgeMs: null,
+            state: null,
+            server: null,
+            adapters: [],
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      return new Response('not found', { status: 404 });
+    }),
+  );
+}
+
 describe('App', () => {
+  beforeEach(() => {
+    const store = new Map<string, string>();
+    vi.stubGlobal('localStorage', {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => {
+        store.set(k, String(v));
+      },
+      removeItem: (k: string) => {
+        store.delete(k);
+      },
+      clear: () => store.clear(),
+    });
+  });
+
   afterEach(() => {
+    cleanup();
     vi.unstubAllGlobals();
   });
 
   it('renders dashboard chrome and empty state', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async (input: RequestInfo) => {
-        const url = String(input);
-        if (url.includes('/api/health')) {
-          return new Response(
-            JSON.stringify({
-              status: 'ok',
-              service: 'speedify-status-api',
-              version: '0.0.0',
-              lastSampleAgeMs: null,
-              sampleCount: 0,
-            }),
-            { status: 200, headers: { 'Content-Type': 'application/json' } },
-          );
-        }
-        if (url.includes('/api/status')) {
-          return new Response(
-            JSON.stringify({
-              window: '30s',
-              generatedAt: new Date().toISOString(),
-              lastSampleTs: null,
-              lastSampleAgeMs: null,
-              state: null,
-              server: null,
-              adapters: [],
-            }),
-            { status: 200, headers: { 'Content-Type': 'application/json' } },
-          );
-        }
-        return new Response('not found', { status: 404 });
-      }),
-    );
+    stubEmptyDashboardFetch();
 
     renderApp();
     expect(screen.getByText('Speedify Status')).toBeInTheDocument();
-    expect(screen.getByLabelText('Color theme')).toBeInTheDocument();
+    expect(screen.queryByText('WAN health')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/Per-adapter latency and throughput over a sliding window/i),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Settings' })).toBeInTheDocument();
+    expect(screen.queryByLabelText('Color theme')).not.toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getByText(/No adapter samples yet/i)).toBeInTheDocument();
     });
     expect(screen.getByText(/API ok/i)).toBeInTheDocument();
     expect(screen.queryByText(/Daily GB/i)).not.toBeInTheDocument();
     expect(screen.getByText(/ping ms · rates Mbps/i)).toBeInTheDocument();
+  });
+
+  it('toggles settings panel with gear and persists open state', () => {
+    stubEmptyDashboardFetch();
+
+    renderApp();
+    const gear = screen.getByRole('button', { name: 'Settings' });
+    expect(gear).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByLabelText('Color theme')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Query window')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Display refresh')).not.toBeInTheDocument();
+
+    fireEvent.click(gear);
+    expect(gear).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByLabelText('Color theme')).toBeInTheDocument();
+    expect(screen.getByLabelText('Query window')).toBeInTheDocument();
+    expect(screen.getByLabelText('Display refresh')).toBeInTheDocument();
+    expect(localStorage.getItem('speedify-status.settingsOpen')).toBe('1');
+
+    fireEvent.click(gear);
+    expect(gear).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByLabelText('Color theme')).not.toBeInTheDocument();
+    expect(localStorage.getItem('speedify-status.settingsOpen')).toBe('0');
+  });
+
+  it('restores open settings from localStorage', async () => {
+    localStorage.setItem('speedify-status.settingsOpen', '1');
+    stubEmptyDashboardFetch();
+
+    renderApp();
+    const gear = screen.getByRole('button', { name: 'Settings' });
+    expect(gear).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByLabelText('Color theme')).toBeInTheDocument();
   });
 
   it('renders now/avg/max columns without Daily GB', async () => {
