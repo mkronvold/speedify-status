@@ -17,7 +17,7 @@ import (
 	"github.com/mkronvold/speedify-status/apps/agent/internal/sample"
 )
 
-const version = "0.1.0"
+const version = "0.1.1"
 
 func main() {
 	var (
@@ -55,6 +55,7 @@ func main() {
 
 	var prev netdev.Snapshot
 	var prevAt time.Time
+	statsWarnLogged := false
 
 	tick := func() error {
 		now := time.Now()
@@ -97,12 +98,35 @@ func main() {
 		prev = cur
 		prevAt = now
 
+		// Primary latency: Speedify tunnel RTT from `speedify_cli stats`
+		// (connection_stats.latencyMs). Fallback: ICMP to iface gateway.
+		// IspLatencyMs from show adapters is intentionally not used as primary.
+		var statsLat map[string]float64
+		if !*simulate {
+			var statsErr error
+			statsLat, statsErr = runner.ConnectionLatency()
+			if statsErr != nil {
+				if !statsWarnLogged {
+					fmt.Fprintf(os.Stderr, "connection_stats warning: %v (using ICMP fallback)\n", statsErr)
+					statsWarnLogged = true
+				}
+				statsLat = nil
+			}
+		}
+
 		lat := make(map[string]*float64, len(list))
 		for _, a := range list {
 			if *simulate {
 				v := 20.0 + float64(len(a.ID))
 				lat[a.ID] = &v
 				continue
+			}
+			if statsLat != nil {
+				if ms, ok := statsLat[a.ID]; ok {
+					v := ms
+					lat[a.ID] = &v
+					continue
+				}
 			}
 			lat[a.ID] = prober.Probe(ctx, a.ID)
 		}
