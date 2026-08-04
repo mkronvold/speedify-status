@@ -99,6 +99,29 @@ body {
   color: var(--theme-muted-text);
 }
 
+.theme-control {
+  justify-items: start;
+}
+
+.theme-select {
+  font: inherit;
+  font-size: 0.75rem;
+  min-width: 8.5rem;
+  border-radius: 0.4rem;
+  border: 1px solid var(--theme-border);
+  background: var(--theme-input-bg);
+  color: var(--theme-text);
+  padding: 0.28rem 0.45rem;
+  cursor: pointer;
+}
+
+.theme-select:hover,
+.theme-select:focus-visible {
+  border-color: var(--theme-accent);
+  outline: 2px solid color-mix(in srgb, var(--theme-focus-ring) 45%, transparent);
+  outline-offset: 1px;
+}
+
 .toggle {
   display: flex;
   flex-wrap: wrap;
