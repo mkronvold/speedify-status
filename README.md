@@ -3,7 +3,7 @@
 [![Validate](https://github.com/mkronvold/speedify-status/actions/workflows/validate.yml/badge.svg)](https://github.com/mkronvold/speedify-status/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
-**Speedify multi-WAN health board** — live per-WAN latency (min/avg/max), throughput in **Mbps** (min/avg/max), and adapter priority/state.
+**Speedify multi-WAN health board** — live per-WAN latency (now/avg/max), throughput in **Mbps** (now/avg/max), and adapter priority/state.
 
 This project is a focused health board for Speedify bonding adapters. It is **independent of** WDMBG, ntop, NetFlow, and other traffic-volume dashboards.
 
@@ -18,9 +18,9 @@ License: [MIT](./LICENSE)
 
 ## What you get
 
-- Per-adapter **latency** min / avg / max (ms)
-- Per-adapter **download Mbps** min / avg / max and **upload Mbps** avg
-- Adapter **name**, **state**, **priority** / working priority, optional daily usage
+- Per-adapter **latency** now / avg / max (ms)
+- Per-adapter **download** and **upload Mbps** now / avg / max
+- Adapter **name**, **state**, **priority** / working priority
 - Query **windows**: `5s` · `30s` · `5m` · `15m` · `30m` · `1h`
 - Display refresh controls (pause / 1s / 5s / …)
 - **Theme** picker (light/dark + full mkronvold theme set); preference stored in `localStorage` (`speedify-status.theme`) and falls back to `prefers-color-scheme`
@@ -99,7 +99,7 @@ Open http://127.0.0.1:5174/
 | ------ | ------------------------ | -------------------------- |
 | `GET`  | `/health`, `/api/health` | Liveness + last sample age |
 | `POST` | `/api/ingest/sample`     | Agent sample batch         |
-| `GET`  | `/api/status?window=30s` | Per-adapter min/avg/max    |
+| `GET`  | `/api/status?window=30s` | Per-adapter now/avg/max    |
 
 Optional ingest auth: set `SPEEDIFY_STATUS_INGEST_TOKEN` on the API and send `Authorization: Bearer …` or `X-Ingest-Token` from the agent (`INGEST_TOKEN`).
 

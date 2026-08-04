@@ -26,7 +26,7 @@ describe('SampleStore ring', () => {
 });
 
 describe('buildStatus aggregates', () => {
-  it('computes min/avg/max latency and DL, UL avg', () => {
+  it('computes now/avg/max for latency, DL, and UL (now = latest sample)', () => {
     const store = new SampleStore();
     const now = Date.now();
     const base = {
@@ -65,13 +65,48 @@ describe('buildStatus aggregates', () => {
     expect(status.state).toBe('CONNECTED');
     expect(status.adapters).toHaveLength(1);
     const row = status.adapters[0]!;
-    expect(row.latencyMs).toEqual({ min: 20, avg: 30, max: 40 });
-    expect(row.dlMbps).toEqual({ min: 100, avg: 150, max: 200 });
-    expect(row.ulMbps.avg).toBe(20);
+    // now latency is null because latest sample has null latencyMs
+    expect(row.latencyMs).toEqual({ now: null, avg: 30, max: 40, min: 20 });
+    expect(row.dlMbps).toEqual({ now: 150, avg: 150, max: 200, min: 100 });
+    expect(row.ulMbps).toEqual({ now: 20, avg: 20, max: 30, min: 10 });
+  });
+
+  it('sets now from latest-by-ts even if samples are ingested out of order', () => {
+    const store = new SampleStore();
+    const now = Date.now();
+    const base = {
+      id: 'eth1',
+      name: 'LTE',
+      state: 'connected',
+      priority: 'backup',
+      workingPriority: 'backup',
+    };
+    // Ingest newer sample first, then older
+    store.ingest(
+      {
+        ts: now - 500,
+        adapters: [{ ...base, latencyMs: 50, dlMbps: 40, ulMbps: 8 }],
+      },
+      now - 500,
+    );
+    store.ingest(
+      {
+        ts: now - 2000,
+        adapters: [{ ...base, latencyMs: 10, dlMbps: 100, ulMbps: 20 }],
+      },
+      now - 2000,
+    );
+
+    const row = buildStatus(store, '30s', now).adapters[0]!;
+    expect(row.latencyMs.now).toBe(50);
+    expect(row.dlMbps.now).toBe(40);
+    expect(row.ulMbps.now).toBe(8);
+    expect(row.latencyMs.avg).toBe(30);
+    expect(row.ulMbps.max).toBe(20);
   });
 
   it('uses metricStats helper consistently', () => {
-    expect(metricStats([1, 2, 3])).toEqual({ min: 1, avg: 2, max: 3 });
+    expect(metricStats([1, 2, 3])).toEqual({ now: 3, avg: 2, max: 3, min: 1 });
     const row = toAdapterStatus({
       id: 'x',
       name: 'n',
@@ -81,12 +116,16 @@ describe('buildStatus aggregates', () => {
       latency: [1, 3],
       dl: [10],
       ul: [5, 15],
+      lastLatency: 3,
+      lastDl: 10,
+      lastUl: 15,
       usageDailyBytes: 100,
       usageDailyLimitBytes: null,
       lastTs: 1,
     });
+    expect(row.latencyMs.now).toBe(3);
     expect(row.latencyMs.max).toBe(3);
-    expect(row.ulMbps.avg).toBe(10);
+    expect(row.ulMbps).toEqual({ now: 15, avg: 10, max: 15, min: 5 });
     expect(row.usageDailyBytes).toBe(100);
   });
 });

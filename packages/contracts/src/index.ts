@@ -58,10 +58,13 @@ export const sampleEnvelopeSchema = z.object({
 });
 export type SampleEnvelope = z.infer<typeof sampleEnvelopeSchema>;
 
+/** Aggregated metric: latest sample (now), average, and max over the window. */
 export const metricStatsSchema = z.object({
-  min: z.number().finite().nullable(),
+  now: z.number().finite().nullable(),
   avg: z.number().finite().nullable(),
   max: z.number().finite().nullable(),
+  /** Optional; retained for backward compatibility. UI does not display min. */
+  min: z.number().finite().nullable().optional(),
 });
 export type MetricStats = z.infer<typeof metricStatsSchema>;
 
@@ -74,9 +77,7 @@ export const adapterStatusSchema = z.object({
   workingPriority: z.string(),
   latencyMs: metricStatsSchema,
   dlMbps: metricStatsSchema,
-  ulMbps: z.object({
-    avg: z.number().finite().nullable(),
-  }),
+  ulMbps: metricStatsSchema,
   usageDailyBytes: z.number().finite().nonnegative().nullable(),
   usageDailyLimitBytes: z.number().finite().nonnegative().nullable(),
   sampleCount: z.number().int().nonnegative(),
@@ -100,11 +101,25 @@ export function parseWindow(raw: unknown, fallback: QueryWindow = '30s'): QueryW
   return windowSchema.parse(value);
 }
 
-/** Aggregate finite numbers into min/avg/max; empty → all null. */
-export function metricStats(values: readonly number[]): MetricStats {
+export interface MetricStatsOptions {
+  /**
+   * Explicit "now" (latest-by-ts sample value). When omitted, uses the last
+   * finite entry in `values` (callers should pass time-ordered series).
+   */
+  now?: number | null;
+}
+
+/** Aggregate finite numbers into now/avg/max (min kept for compat); empty → all null. */
+export function metricStats(values: readonly number[], options?: MetricStatsOptions): MetricStats {
   const nums = values.filter((v) => Number.isFinite(v));
   if (nums.length === 0) {
-    return { min: null, avg: null, max: null };
+    const now =
+      options && 'now' in options
+        ? options.now !== null && options.now !== undefined && Number.isFinite(options.now)
+          ? options.now
+          : null
+        : null;
+    return { now, avg: null, max: null, min: null };
   }
   let min = nums[0]!;
   let max = nums[0]!;
@@ -114,7 +129,16 @@ export function metricStats(values: readonly number[]): MetricStats {
     if (v > max) max = v;
     sum += v;
   }
-  return { min, avg: sum / nums.length, max };
+  let now: number | null;
+  if (options && 'now' in options) {
+    now =
+      options.now !== null && options.now !== undefined && Number.isFinite(options.now)
+        ? options.now
+        : null;
+  } else {
+    now = nums[nums.length - 1]!;
+  }
+  return { now, avg: sum / nums.length, max, min };
 }
 
 /** Average of finite numbers; empty → null. */

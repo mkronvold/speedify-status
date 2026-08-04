@@ -15,17 +15,6 @@ export function formatMs(value: number | null | undefined): string {
   return value.toFixed(0);
 }
 
-/** Daily usage as GB (decimal). */
-export function formatDailyGb(bytes: number | null | undefined): string {
-  if (bytes === null || bytes === undefined || !Number.isFinite(bytes)) return '—';
-  const gb = bytes / 1e9;
-  if (gb === 0) return '0';
-  if (gb < 0.1) return gb.toFixed(3);
-  if (gb < 10) return gb.toFixed(2);
-  if (gb < 100) return gb.toFixed(1);
-  return gb.toFixed(0);
-}
-
 export function formatAge(ms: number | null | undefined): string {
   if (ms === null || ms === undefined || !Number.isFinite(ms)) return 'no samples';
   if (ms < 1500) return 'just now';

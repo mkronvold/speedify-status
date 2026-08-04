@@ -30,15 +30,30 @@ describe('windowSchema / parseWindow', () => {
 
 describe('metricStats', () => {
   it('returns nulls for empty', () => {
-    expect(metricStats([])).toEqual({ min: null, avg: null, max: null });
+    expect(metricStats([])).toEqual({ now: null, avg: null, max: null, min: null });
   });
 
-  it('computes min/avg/max', () => {
-    expect(metricStats([10, 20, 30])).toEqual({ min: 10, avg: 20, max: 30 });
+  it('computes now/avg/max (now = last value) and keeps min', () => {
+    expect(metricStats([10, 20, 30])).toEqual({ now: 30, avg: 20, max: 30, min: 10 });
   });
 
   it('ignores non-finite', () => {
-    expect(metricStats([5, Number.NaN, 15])).toEqual({ min: 5, avg: 10, max: 15 });
+    expect(metricStats([5, Number.NaN, 15])).toEqual({ now: 15, avg: 10, max: 15, min: 5 });
+  });
+
+  it('uses explicit now option (latest-by-ts override)', () => {
+    expect(metricStats([10, 20, 30], { now: 12 })).toEqual({
+      now: 12,
+      avg: 20,
+      max: 30,
+      min: 10,
+    });
+    expect(metricStats([10, 20], { now: null })).toEqual({
+      now: null,
+      avg: 15,
+      max: 20,
+      min: 10,
+    });
   });
 });
 
