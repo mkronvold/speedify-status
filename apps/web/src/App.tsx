@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { QUERY_WINDOWS, type AdapterStatus, type QueryWindow } from '@speedify-status/contracts';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchHealth, fetchStatus } from './api/client';
-import { formatAge, formatMbps, formatMs } from './components/format';
+import { formatAdapterName, formatAge, formatMbps, formatMs } from './components/format';
 import {
   THEME_IDS,
   THEME_LABELS,
@@ -66,7 +66,7 @@ function loadRefresh(): DisplayRefreshId {
 function sortValue(row: AdapterStatus, key: SortKey): string | number {
   switch (key) {
     case 'name':
-      return row.name.toLowerCase();
+      return formatAdapterName(row.id, row.name).toLowerCase();
     case 'state':
       return row.state.toLowerCase();
     case 'priority':
@@ -287,12 +287,7 @@ export function App() {
             <tbody>
               {rows.map((row) => (
                 <tr key={row.id}>
-                  <td>
-                    {row.name}{' '}
-                    <span className="muted" title={row.id}>
-                      ({row.id})
-                    </span>
-                  </td>
+                  <td title={`id: ${row.id}`}>{formatAdapterName(row.id, row.name)}</td>
                   <td>
                     <span className={`badge ${stateClass(row.state)}`}>{row.state}</span>
                   </td>
