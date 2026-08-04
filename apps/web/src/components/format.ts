@@ -15,6 +15,11 @@ export function formatMs(value: number | null | undefined): string {
   return value.toFixed(0);
 }
 
+/** Display label: interface id first, then adapter name (`eth4:e-vergent.com`). */
+export function formatAdapterName(id: string, name: string): string {
+  return `${id}:${name}`;
+}
+
 export function formatAge(ms: number | null | undefined): string {
   if (ms === null || ms === undefined || !Number.isFinite(ms)) return 'no samples';
   if (ms < 1500) return 'just now';
