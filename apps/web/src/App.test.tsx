@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { App } from './App';
 
@@ -14,55 +14,92 @@ function renderApp() {
   );
 }
 
+function resetStorage() {
+  localStorage.clear();
+}
+
+function stubEmptyApis() {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (input: RequestInfo) => {
+      const url = String(input);
+      if (url.includes('/api/health')) {
+        return new Response(
+          JSON.stringify({
+            status: 'ok',
+            service: 'speedify-status-api',
+            version: '0.0.0',
+            lastSampleAgeMs: null,
+            sampleCount: 0,
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      if (url.includes('/api/status')) {
+        return new Response(
+          JSON.stringify({
+            window: '30s',
+            generatedAt: new Date().toISOString(),
+            lastSampleTs: null,
+            lastSampleAgeMs: null,
+            state: null,
+            server: null,
+            adapters: [],
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        );
+      }
+      return new Response('not found', { status: 404 });
+    }),
+  );
+}
+
 describe('App', () => {
   afterEach(() => {
+    cleanup();
     vi.unstubAllGlobals();
+    resetStorage();
   });
 
   it('renders dashboard chrome and empty state', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async (input: RequestInfo) => {
-        const url = String(input);
-        if (url.includes('/api/health')) {
-          return new Response(
-            JSON.stringify({
-              status: 'ok',
-              service: 'speedify-status-api',
-              version: '0.0.0',
-              lastSampleAgeMs: null,
-              sampleCount: 0,
-            }),
-            { status: 200, headers: { 'Content-Type': 'application/json' } },
-          );
-        }
-        if (url.includes('/api/status')) {
-          return new Response(
-            JSON.stringify({
-              window: '30s',
-              generatedAt: new Date().toISOString(),
-              lastSampleTs: null,
-              lastSampleAgeMs: null,
-              state: null,
-              server: null,
-              adapters: [],
-            }),
-            { status: 200, headers: { 'Content-Type': 'application/json' } },
-          );
-        }
-        return new Response('not found', { status: 404 });
-      }),
-    );
+    stubEmptyApis();
 
     renderApp();
     expect(screen.getByText('Speedify Status')).toBeInTheDocument();
-    expect(screen.getByLabelText('Color theme')).toBeInTheDocument();
+    expect(screen.getByLabelText('Settings')).toBeInTheDocument();
+    expect(screen.getByLabelText('Settings')).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByLabelText('Color theme')).not.toBeInTheDocument();
+    expect(screen.queryByText('WAN health')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/Per-adapter latency and throughput over a sliding window/i),
+    ).not.toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getByText(/No adapter samples yet/i)).toBeInTheDocument();
     });
     expect(screen.getByText(/API ok/i)).toBeInTheDocument();
     expect(screen.queryByText(/Daily GB/i)).not.toBeInTheDocument();
     expect(screen.getByText(/ping ms · rates Mbps/i)).toBeInTheDocument();
+  });
+
+  it('toggles settings panel from the gear and persists open state', async () => {
+    stubEmptyApis();
+
+    renderApp();
+    const gear = screen.getByLabelText('Settings');
+    expect(gear).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByLabelText('Color theme')).not.toBeInTheDocument();
+
+    fireEvent.click(gear);
+    expect(gear).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByLabelText('Color theme')).toBeInTheDocument();
+    expect(screen.getByLabelText('Query window')).toBeInTheDocument();
+    expect(screen.getByLabelText('Display refresh')).toBeInTheDocument();
+    expect(localStorage.getItem('speedify-status.settingsOpen')).toBe('true');
+
+    fireEvent.click(gear);
+    expect(gear).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByLabelText('Color theme')).not.toBeInTheDocument();
+    expect(localStorage.getItem('speedify-status.settingsOpen')).toBe('false');
   });
 
   it('renders now/avg/max columns without Daily GB', async () => {
