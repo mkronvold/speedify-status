@@ -156,11 +156,19 @@ describe('App', () => {
       expect(screen.getByText('eth2:Starlink')).toBeInTheDocument();
     });
     expect(screen.queryByText(/Starlink\s*\(eth2\)/)).not.toBeInTheDocument();
-    expect(screen.getByText('ping now')).toBeInTheDocument();
-    expect(screen.getByText('dl now')).toBeInTheDocument();
-    expect(screen.getByText('ul now')).toBeInTheDocument();
-    expect(screen.getAllByText('ms').length).toBeGreaterThanOrEqual(3);
-    expect(screen.getAllByText('mbps').length).toBeGreaterThanOrEqual(6);
+    // Three-line metric headers: family / role / unit
+    expect(screen.getAllByText('Ping')).toHaveLength(3);
+    expect(screen.getAllByText('DL')).toHaveLength(3);
+    expect(screen.getAllByText('UL')).toHaveLength(3);
+    expect(screen.getAllByText('Now')).toHaveLength(3);
+    expect(screen.getAllByText('avg')).toHaveLength(3);
+    expect(screen.getAllByText('max')).toHaveLength(3);
+    expect(screen.getAllByText('ms')).toHaveLength(3);
+    expect(screen.getAllByText('mbps')).toHaveLength(6);
+    expect(screen.getByRole('columnheader', { name: /Ping\s+Now\s+ms/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /Ping\s+avg\s+ms/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /DL\s+Now\s+mbps/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /UL\s+max\s+mbps/i })).toBeInTheDocument();
     expect(screen.queryByText('Daily GB')).not.toBeInTheDocument();
     expect(screen.queryByText(/daily GB/i)).not.toBeInTheDocument();
     // now / avg / max cells — one decimal

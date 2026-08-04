@@ -212,7 +212,7 @@ export function App() {
     </th>
   );
 
-  const thMetric = (key: SortKey, main: string, unit: string) => (
+  const thMetric = (key: SortKey, family: string, role: string, unit: string) => (
     <th
       key={key}
       className={`num${sortKey === key ? ' sorted' : ''}`}
@@ -220,8 +220,9 @@ export function App() {
       title="Sort"
     >
       <span className="th-lines">
-        <span className="th-main">
-          {main}
+        <span className="th-family">{family}</span>
+        <span className="th-role">
+          {role}
           {sortKey === key ? (sortDir === 'asc' ? ' ↑' : ' ↓') : ''}
         </span>
         <span className="th-unit">{unit}</span>
@@ -341,15 +342,15 @@ export function App() {
                 {th('name', 'Name')}
                 {th('state', 'State')}
                 {th('priority', 'Priority')}
-                {thMetric('latNow', 'ping now', 'ms')}
-                {thMetric('latAvg', 'avg', 'ms')}
-                {thMetric('latMax', 'max', 'ms')}
-                {thMetric('dlNow', 'dl now', 'mbps')}
-                {thMetric('dlAvg', 'avg', 'mbps')}
-                {thMetric('dlMax', 'max', 'mbps')}
-                {thMetric('ulNow', 'ul now', 'mbps')}
-                {thMetric('ulAvg', 'avg', 'mbps')}
-                {thMetric('ulMax', 'max', 'mbps')}
+                {thMetric('latNow', 'Ping', 'Now', 'ms')}
+                {thMetric('latAvg', 'Ping', 'avg', 'ms')}
+                {thMetric('latMax', 'Ping', 'max', 'ms')}
+                {thMetric('dlNow', 'DL', 'Now', 'mbps')}
+                {thMetric('dlAvg', 'DL', 'avg', 'mbps')}
+                {thMetric('dlMax', 'DL', 'max', 'mbps')}
+                {thMetric('ulNow', 'UL', 'Now', 'mbps')}
+                {thMetric('ulAvg', 'UL', 'avg', 'mbps')}
+                {thMetric('ulMax', 'UL', 'max', 'mbps')}
               </tr>
             </thead>
             <tbody>
