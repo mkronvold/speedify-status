@@ -18,7 +18,7 @@ License: [MIT](./LICENSE)
 
 ## What you get
 
-- Per-adapter **latency** now / avg / max (ms)
+- Per-adapter **latency** now / avg / max (ms) — Speedify tunnel RTT from `speedify_cli stats` (UI may still label it “ping”)
 - Per-adapter **download** and **upload Mbps** now / avg / max
 - Adapter **name**, **state**, **priority** / working priority
 - Query **windows**: `5s` · `30s` · `5m` · `15m` · `30m` · `1h`
@@ -33,7 +33,7 @@ Speedify host                         App host (Docker)
 │ Go agent (host-native)   │  POST    │ Fastify API                 │
 │  speedify_cli adapters   │ ───────▶ │  in-memory 1s ring (~1h)    │
 │  /proc/net/dev → Mbps    │ /api/    │ React web (static + nginx)  │
-│  per-iface ICMP RTT      │ ingest   │  proxies /api and /health   │
+│  stats latencyMs (+ICMP) │ ingest   │  proxies /api and /health   │
 └──────────────────────────┘          └─────────────────────────────┘
 ```
 
