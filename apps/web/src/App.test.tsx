@@ -62,7 +62,7 @@ describe('App', () => {
     });
     expect(screen.getByText(/API ok/i)).toBeInTheDocument();
     expect(screen.queryByText(/Daily GB/i)).not.toBeInTheDocument();
-    expect(screen.getByText(/latency ms · rates Mbps/i)).toBeInTheDocument();
+    expect(screen.getByText(/ping ms · rates Mbps/i)).toBeInTheDocument();
   });
 
   it('renders now/avg/max columns without Daily GB', async () => {
@@ -119,14 +119,16 @@ describe('App', () => {
       expect(screen.getByText('eth2:Starlink')).toBeInTheDocument();
     });
     expect(screen.queryByText(/Starlink\s*\(eth2\)/)).not.toBeInTheDocument();
-    expect(screen.getByText('Lat now')).toBeInTheDocument();
-    expect(screen.getByText('DL now')).toBeInTheDocument();
-    expect(screen.getByText('UL now')).toBeInTheDocument();
+    expect(screen.getByText('ping now')).toBeInTheDocument();
+    expect(screen.getByText('dl now')).toBeInTheDocument();
+    expect(screen.getByText('ul now')).toBeInTheDocument();
+    expect(screen.getAllByText('ms').length).toBeGreaterThanOrEqual(3);
+    expect(screen.getAllByText('mbps').length).toBeGreaterThanOrEqual(6);
     expect(screen.queryByText('Daily GB')).not.toBeInTheDocument();
     expect(screen.queryByText(/daily GB/i)).not.toBeInTheDocument();
-    // now / avg / max cells
-    expect(screen.getByText('25')).toBeInTheDocument();
-    expect(screen.getByText('150')).toBeInTheDocument();
+    // now / avg / max cells — one decimal
+    expect(screen.getByText('25.0')).toBeInTheDocument();
+    expect(screen.getByText('150.0')).toBeInTheDocument();
     expect(screen.getByText('12.0')).toBeInTheDocument();
   });
 });

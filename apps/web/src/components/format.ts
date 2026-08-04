@@ -1,18 +1,13 @@
-/** Format Mbps for table cells. */
+/** Format Mbps for table cells (always one decimal when finite). */
 export function formatMbps(value: number | null | undefined): string {
   if (value === null || value === undefined || !Number.isFinite(value)) return '—';
-  if (value === 0) return '0';
-  if (value < 0.01) return value.toFixed(3);
-  if (value < 10) return value.toFixed(2);
-  if (value < 100) return value.toFixed(1);
-  return value.toFixed(0);
+  return value.toFixed(1);
 }
 
-/** Format latency ms. */
+/** Format latency ms (always one decimal when finite). */
 export function formatMs(value: number | null | undefined): string {
   if (value === null || value === undefined || !Number.isFinite(value)) return '—';
-  if (value < 10) return value.toFixed(1);
-  return value.toFixed(0);
+  return value.toFixed(1);
 }
 
 /** Display label: interface id first, then adapter name (`eth4:e-vergent.com`). */
