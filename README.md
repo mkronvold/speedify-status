@@ -23,6 +23,7 @@ License: [MIT](./LICENSE)
 - Adapter **name**, **state**, **priority** / working priority, optional daily usage
 - Query **windows**: `5s` · `30s` · `5m` · `15m` · `30m` · `1h`
 - Display refresh controls (pause / 1s / 5s / …)
+- **Theme** picker (light/dark + full mkronvold theme set); preference stored in `localStorage` (`speedify-status.theme`) and falls back to `prefers-color-scheme`
 
 ## Architecture
 
@@ -38,7 +39,7 @@ Speedify host                         App host (Docker)
 
 1. **Agent** on the Speedify host samples adapters about once per second and POSTs a batch.
 2. **API** keeps samples in an in-memory ring (no database in MVP).
-3. **Web UI** polls `/api/status?window=…` and renders a compact dark table.
+3. **Web UI** polls `/api/status?window=…` and renders a compact themed table (light/dark and more).
 
 ## Stack
 

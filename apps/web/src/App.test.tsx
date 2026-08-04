@@ -56,6 +56,7 @@ describe('App', () => {
 
     renderApp();
     expect(screen.getByText('Speedify Status')).toBeInTheDocument();
+    expect(screen.getByLabelText('Color theme')).toBeInTheDocument();
     await waitFor(() => {
       expect(screen.getByText(/No adapter samples yet/i)).toBeInTheDocument();
     });

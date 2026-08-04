@@ -1,8 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
 import { QUERY_WINDOWS, type AdapterStatus, type QueryWindow } from '@speedify-status/contracts';
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchHealth, fetchStatus } from './api/client';
 import { formatAge, formatDailyGb, formatMbps, formatMs } from './components/format';
+import {
+  THEME_IDS,
+  THEME_LABELS,
+  applyTheme,
+  persistTheme,
+  resolveInitialTheme,
+  type ThemeId,
+} from './theme';
 
 const WINDOWS: QueryWindow[] = [...QUERY_WINDOWS];
 
@@ -94,8 +102,19 @@ function stateClass(state: string): string {
 export function App() {
   const [window, setWindow] = useState<QueryWindow>(loadWindow);
   const [refreshId, setRefreshId] = useState<DisplayRefreshId>(loadRefresh);
+  const [theme, setTheme] = useState<ThemeId>(() => resolveInitialTheme());
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
+
+  useEffect(() => {
+    applyTheme(theme);
+  }, [theme]);
+
+  const onThemeChange = useCallback((next: ThemeId) => {
+    persistTheme(next);
+    applyTheme(next);
+    setTheme(next);
+  }, []);
 
   const refreshMs = DISPLAY_REFRESH_OPTIONS.find((o) => o.id === refreshId)?.ms ?? 5_000;
 
@@ -162,6 +181,24 @@ export function App() {
         </div>
         <div className="hero-meta">
           <div className="hero-controls">
+            <div className="control theme-control">
+              <label className="control-label" htmlFor="theme-select">
+                Theme
+              </label>
+              <select
+                id="theme-select"
+                className="theme-select"
+                value={theme}
+                aria-label="Color theme"
+                onChange={(event) => onThemeChange(event.target.value as ThemeId)}
+              >
+                {THEME_IDS.map((id) => (
+                  <option key={id} value={id}>
+                    {THEME_LABELS[id]}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="control">
               <p className="control-label">Window</p>
               <div className="toggle" role="group" aria-label="Query window">

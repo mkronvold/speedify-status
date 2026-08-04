@@ -1,9 +1,53 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Speedify Status</title>
+    <script>
+      (() => {
+        const key = 'speedify-status.theme';
+        const aliases = {
+          dark: 'midnight',
+          dawn: 'light',
+          linen: 'sepia',
+          mist: 'coyote',
+          'coyote-medium': 'coyote',
+          'summer-nights': 'coyote',
+          'winter-nights': 'ocean',
+        };
+        const ids = [
+          'sunshower',
+          'light',
+          'sepia',
+          'summer',
+          'autumn-light',
+          'spring',
+          'coyote',
+          'autumn',
+          'coyote-dark',
+          'pine',
+          'ocean',
+          'forest',
+          'guinness',
+          'midnight',
+          'obsidian',
+        ];
+        let theme = null;
+        try {
+          const raw = localStorage.getItem(key);
+          if (raw && ids.includes(raw)) theme = raw;
+          else if (raw && aliases[raw]) theme = aliases[raw];
+        } catch {}
+        if (!theme) {
+          theme =
+            window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches
+              ? 'light'
+              : 'midnight';
+        }
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
