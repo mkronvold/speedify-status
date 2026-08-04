@@ -4,10 +4,10 @@ export function formatMbps(value: number | null | undefined): string {
   return value.toFixed(1);
 }
 
-/** Format latency ms (always one decimal when finite). */
+/** Format latency ms as a whole number (no decimal places). */
 export function formatMs(value: number | null | undefined): string {
   if (value === null || value === undefined || !Number.isFinite(value)) return '—';
-  return value.toFixed(1);
+  return String(Math.round(value));
 }
 
 /** Display label: interface id first, then adapter name (`eth4:e-vergent.com`). */

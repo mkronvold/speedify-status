@@ -171,8 +171,8 @@ describe('App', () => {
     expect(screen.getByRole('columnheader', { name: /UL\s+max\s+mbps/i })).toBeInTheDocument();
     expect(screen.queryByText('Daily GB')).not.toBeInTheDocument();
     expect(screen.queryByText(/daily GB/i)).not.toBeInTheDocument();
-    // now / avg / max cells — one decimal
-    expect(screen.getByText('25.0')).toBeInTheDocument();
+    // latency integer ms; rates one decimal
+    expect(screen.getByText('25')).toBeInTheDocument();
     expect(screen.getByText('150.0')).toBeInTheDocument();
     expect(screen.getByText('12.0')).toBeInTheDocument();
   });
